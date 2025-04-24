@@ -6,6 +6,9 @@ import authRoutes from "./routes/authRoutes.js";
 import session from "express-session";
 import passport from "passport";
 import "./config/passport.js";
+import packageRoutes from "./routes/packageRoutes.js";
+import bookingRoutes from "./routes/bookingRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -27,6 +30,12 @@ app.use(passport.session());
 connectDB();
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/packages", packageRoutes);
+
+app.use("/api/bookings", bookingRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
   res.send("Travel Booking API with MongoDB is running...");
