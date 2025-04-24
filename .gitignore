@@ -9,22 +9,22 @@ yarn-debug.log*
 yarn-error.log*
 
 
-# Environment files
+# Environment
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Build output
+# Build
 dist/
 build/
 tmp/
 temp/
 
-# TypeScript cache
+# TypeScript
 *.tsbuildinfo
 
 
-# Sequelize CLI migrations and logs (optional)
+# Sequelize
 .sequelizerc
