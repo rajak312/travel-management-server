@@ -14,6 +14,9 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        if (email === process.env.ADMIN_EMAIL) {
+          return done(null, false);
+        }
         const existingUser = await User.findOne({
           email: profile.emails[0].value,
         });
@@ -35,7 +38,6 @@ passport.use(
   )
 );
 
-// Optional: Serialize/Deserialize
 passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser((id, done) =>
   User.findById(id).then((user) => done(null, user))
