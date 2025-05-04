@@ -4,7 +4,7 @@ import {
   getPackageStatusReport,
   getBookingCountPerPackage,
 } from "../controllers/adminController.js";
-import { protect, adminOnly } from "../middleware/authMiddleware.js"; // ⬅️ import adminOnly
+import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 

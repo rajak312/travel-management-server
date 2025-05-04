@@ -10,7 +10,6 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Admin only could have separate check later
 router.post("/", protect, createPackage);
 router.get("/", getAllPackages);
 router.get("/:id", getPackageById);
