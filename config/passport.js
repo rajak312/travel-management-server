@@ -14,17 +14,18 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        const email = profile.emails[0].value;
         if (email === process.env.ADMIN_EMAIL) {
           return done(null, false);
         }
         const existingUser = await User.findOne({
-          email: profile.emails[0].value,
+          email
         });
         if (existingUser) return done(null, existingUser);
 
         const newUser = await User.create({
           name: profile.displayName,
-          email: profile.emails[0].value,
+          email,
           profilePic: profile.photos[0].value,
           authType: "google",
           password: null,
