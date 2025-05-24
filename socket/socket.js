@@ -5,7 +5,6 @@ import User from '../models/User.js';
 let ioInstance;
 
 export const initSocket = (server) => {
-  console.log("client",process.env.CLIENT_URL)
   const io = new Server(server, {
     cors: {
       origin: process.env.CLIENT_URL || "http://localhost:5173",
