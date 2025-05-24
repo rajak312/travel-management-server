@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import {createServer} from "http";
 import connectDB from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import session from "express-session";
@@ -10,9 +11,13 @@ import packageRoutes from "./routes/packageRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import { createDefaultAdmin } from "./utils/seedAdmin.js";
+import { initSocket } from "./socket/socket.js";
 
 dotenv.config();
+
 const app = express();
+const server = createServer(app);
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(
@@ -34,8 +39,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-connectDB().then(createDefaultAdmin).catch(console.error);
-  
+await connectDB().then(createDefaultAdmin).catch(console.error);
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/packages", packageRoutes);
@@ -47,6 +52,9 @@ app.get("/", (req, res) => {
   res.send("Travel Booking API with MongoDB is running...");
 });
 
+initSocket(server);
+
 // Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
