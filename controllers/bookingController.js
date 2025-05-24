@@ -1,5 +1,7 @@
 import Booking from "../models/Booking.js";
 import TravelPackage from "../models/Package.js";
+import { getIO } from '../socket/socket.js';
+// import {D} from 'mongoose'
 
 export const createBooking = async (req, res) => {
   const { packageId, selectedOptions } = req.body;
@@ -9,7 +11,6 @@ export const createBooking = async (req, res) => {
     if (!travelPackage)
       return res.status(404).json({ message: "Package not found" });
 
-    // Calculate total price
     let totalPrice = travelPackage.basePrice;
     if (selectedOptions.food) totalPrice += 200;
     if (selectedOptions.accommodation) totalPrice += 500;
@@ -20,7 +21,9 @@ export const createBooking = async (req, res) => {
       selectedOptions,
       totalPrice,
     });
-
+    const socket=getIO()
+    socket.to(req.user._id.toString()).emit("PackageBooked",booking)
+    socket.to('admins').emit("PackageBooked",booking)
     res.status(201).json(booking);
   } catch (error) {
     res.status(500).json({ message: error.message });

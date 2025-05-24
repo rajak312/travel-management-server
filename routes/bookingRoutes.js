@@ -8,8 +8,8 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", protect, createBooking); // User books a package
-router.get("/my-bookings", protect, getUserBookings); // User's own bookings
-router.get("/all", protect, getAllBookings); // Admin route to view all
+router.post("/", protect, createBooking);
+router.get("/my-bookings", protect, getUserBookings);
+router.get("/all", protect, getAllBookings);
 
 export default router;
