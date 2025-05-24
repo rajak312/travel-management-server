@@ -11,7 +11,11 @@ export const createPackage = async (req, res) => {
 
 export const getAllPackages = async (req, res) => {
   try {
-    const packages = await TravelPackage.find();
+    const packages = await TravelPackage.find(
+      {
+        expired:false
+      }
+    );
     res.json(packages);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -42,7 +46,9 @@ export const updatePackage = async (req, res) => {
 
 export const deletePackage = async (req, res) => {
   try {
-    await TravelPackage.findByIdAndDelete(req.params.id);
+    await TravelPackage.findByIdAndUpdate(req.params.id,{
+      expired:true
+    });
     res.json({ message: "Package deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });

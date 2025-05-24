@@ -35,7 +35,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 connectDB().then(createDefaultAdmin).catch(console.error);
-
+  
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/packages", packageRoutes);

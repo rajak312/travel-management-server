@@ -11,6 +11,7 @@ const packageSchema = new mongoose.Schema(
       food: { type: Boolean, default: false },
       accommodation: { type: Boolean, default: false },
     },
+    expired:{type:Boolean, default:false}
   },
   { timestamps: true }
 );
