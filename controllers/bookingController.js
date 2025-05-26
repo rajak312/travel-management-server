@@ -1,7 +1,6 @@
 import Booking from "../models/Booking.js";
 import TravelPackage from "../models/Package.js";
 import { getIO } from '../socket/socket.js';
-// import {D} from 'mongoose'
 
 export const createBooking = async (req, res) => {
   const { packageId, selectedOptions } = req.body;

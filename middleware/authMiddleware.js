@@ -1,15 +1,13 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 
-// 🔐 General JWT Protection
 export const protect = async (req, res, next) => {
-  let token;
+  const authHeader = req.headers.authorization;
 
-  if (req.headers.authorization?.startsWith("Bearer")) {
+  if (authHeader?.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
     try {
-      token = req.headers.authorization.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+      const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
       req.user = await User.findById(decoded.id).select("-password");
 
       if (!req.user) {
@@ -18,12 +16,13 @@ export const protect = async (req, res, next) => {
 
       return next();
     } catch (err) {
-      return res.status(401).json({ message: "Not authorized, invalid token" });
+      return res.status(401).json({ message: "Invalid or expired token" });
     }
   }
 
-  res.status(401).json({ message: "Not authorized, token missing" });
+  res.status(401).json({ message: "Token missing" });
 };
+
 
 // 👮‍♂️ Admin-only middleware
 export const adminOnly = (req, res, next) => {

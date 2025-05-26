@@ -16,34 +16,34 @@ export const initSocket = (server) => {
     console.log('✅ Client connected:', socket.id);
 
     const handleConnection = async () => {
-      const token = socket.handshake.auth?.token;
+      const token = socket.handshake.auth?.accessToken;
 
-      if (token) {
-        try {
-          const decoded = jwt.verify(token, process.env.JWT_SECRET);
-          const userId = decoded.id;
+      if (!token) {
+        console.log("❌ No access token provided");
+        return socket.disconnect();
+      }
 
-          const user = await User.findById(userId);
-          if (!user) {
-            console.log('❌ User not found in DB');
-            return socket.disconnect();
-          }
+      try {
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+        const userId = decoded.id;
 
-          const role = user.role;
-
-          socket.join(userId.toString());
-          if (role === 'admin') {
-            socket.join('admins');
-          }
-
-          console.log(`👤 DB User ${userId} joined rooms: ${userId}${role === 'admin' ? ', admins' : ''}`);
-        } catch (err) {
-          console.error("❌ Error verifying token or fetching user:", err.message);
-          socket.disconnect();
+        const user = await User.findById(userId).select('role');
+        if (!user) {
+          console.log('❌ User not found in DB');
+          return socket.disconnect();
         }
-      } else {
-        console.log("❌ No auth token provided");
-        socket.disconnect();
+
+        // Join user-specific room
+        socket.join(userId.toString());
+
+        if (user.role === 'admin') {
+          socket.join('admins');
+        }
+
+        console.log(`👤 User ${userId} joined rooms: ${userId}${user.role === 'admin' ? ', admins' : ''}`);
+      } catch (err) {
+        console.error("❌ Invalid or expired access token:", err.message);
+        return socket.disconnect();
       }
     };
 

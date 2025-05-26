@@ -1,7 +1,9 @@
 import express from "express";
 import passport from "passport";
 import jwt from "jsonwebtoken";
-import { registerUser, loginUser } from "../controllers/authController.js";
+import { registerUser, loginUser,refreshAccessToken,getMe } from "../controllers/authController.js";
+import { protect } from "../middleware/authMiddleware.js";
+
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -42,5 +44,7 @@ router.get(
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/refresh-token", refreshAccessToken);
+router.get("/me", protect, getMe);
 
 export default router;
