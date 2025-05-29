@@ -1,8 +1,9 @@
 import Booking from "../models/Booking.js";
 import TravelPackage from "../models/Package.js";
 import { getIO } from '../socket/socket.js';
+import logger from "../config/logger.js";
 
-export const createBooking = async (req, res) => {
+export const createBooking = async (req, res, next) => {
   const { packageId, selectedOptions } = req.body;
 
   try {
@@ -20,33 +21,38 @@ export const createBooking = async (req, res) => {
       selectedOptions,
       totalPrice,
     });
-    const socket=getIO()
-    socket.to(req.user._id.toString()).emit("PackageBooked",booking)
-    socket.to('admins').emit("PackageBooked",booking)
+
+    const socket = getIO();
+    socket.to(req.user._id.toString()).emit("PackageBooked", booking);
+    socket.to('admins').emit("PackageBooked", booking);
+
     res.status(201).json(booking);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    logger.error(`createBooking error: ${error.message}`);
+    next(error);
   }
 };
 
-export const getUserBookings = async (req, res) => {
+export const getUserBookings = async (req, res, next) => {
   try {
     const bookings = await Booking.find({ user: req.user._id }).populate(
       "travelPackage"
     );
     res.json(bookings);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    logger.error(`getUserBookings error: ${error.message}`);
+    next(error);
   }
 };
 
-export const getAllBookings = async (req, res) => {
+export const getAllBookings = async (req, res, next) => {
   try {
     const bookings = await Booking.find()
       .populate("user")
       .populate("travelPackage");
     res.json(bookings);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    logger.error(`getAllBookings error: ${error.message}`);
+    next(error);
   }
 };

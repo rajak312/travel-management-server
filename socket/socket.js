@@ -1,6 +1,7 @@
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import logger from '../config/logger.js';  // assuming you have Winston logger here
 
 let ioInstance;
 
@@ -13,13 +14,13 @@ export const initSocket = (server) => {
   });
 
   io.on('connection', (socket) => {
-    console.log('✅ Client connected:', socket.id);
+    logger.info(`✅ Client connected: ${socket.id}`);
 
     const handleConnection = async () => {
       const token = socket.handshake.auth?.accessToken;
 
       if (!token) {
-        console.log("❌ No access token provided");
+        logger.warn("❌ No access token provided, disconnecting socket: " + socket.id);
         return socket.disconnect();
       }
 
@@ -29,20 +30,19 @@ export const initSocket = (server) => {
 
         const user = await User.findById(userId).select('role');
         if (!user) {
-          console.log('❌ User not found in DB');
+          logger.warn(`❌ User not found in DB for socket ${socket.id}, disconnecting`);
           return socket.disconnect();
         }
 
-        // Join user-specific room
         socket.join(userId.toString());
 
         if (user.role === 'admin') {
           socket.join('admins');
         }
 
-        console.log(`👤 User ${userId} joined rooms: ${userId}${user.role === 'admin' ? ', admins' : ''}`);
+        logger.info(`👤 User ${userId} joined rooms: ${userId}${user.role === 'admin' ? ', admins' : ''}`);
       } catch (err) {
-        console.error("❌ Invalid or expired access token:", err.message);
+        logger.error(`❌ Invalid or expired access token for socket ${socket.id}: ${err.message}`);
         return socket.disconnect();
       }
     };
@@ -50,12 +50,12 @@ export const initSocket = (server) => {
     handleConnection();
 
     socket.on('message', (data) => {
-      console.log('📨 Message received:', data);
+      logger.info('📨 Message received:', data);
       io.emit('message', data);
     });
 
     socket.on('disconnect', () => {
-      console.log('❌ Client disconnected:', socket.id);
+      logger.info('❌ Client disconnected:', socket.id);
     });
   });
 

@@ -1,9 +1,9 @@
 import Booking from "../models/Booking.js";
 import TravelPackage from "../models/Package.js";
 import User from "../models/User.js";
+import logger from "../config/logger.js";
 
-// ✅ View all users and their bookings
-export const getUsersWithBookings = async (req, res) => {
+export const getUsersWithBookings = async (req, res, next) => {
   try {
     const users = await User.find().select("-password");
     const bookings = await Booking.find()
@@ -22,12 +22,12 @@ export const getUsersWithBookings = async (req, res) => {
 
     res.json(userBookingMap);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get user bookings", error });
+    logger.error(`getUsersWithBookings error: ${error.message}`);
+    next(error);
   }
 };
 
-// ✅ Get package status: Completed / Active / Upcoming
-export const getPackageStatusReport = async (req, res) => {
+export const getPackageStatusReport = async (req, res, next) => {
   try {
     const today = new Date();
     const allPackages = await TravelPackage.find();
@@ -53,12 +53,12 @@ export const getPackageStatusReport = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({ message: "Failed to get package status", error });
+    logger.error(`getPackageStatusReport error: ${error.message}`);
+    next(error);
   }
 };
 
-// ✅ Booking count per package
-export const getBookingCountPerPackage = async (req, res) => {
+export const getBookingCountPerPackage = async (req, res, next) => {
   try {
     const counts = await Booking.aggregate([
       {
@@ -91,6 +91,7 @@ export const getBookingCountPerPackage = async (req, res) => {
 
     res.json(counts);
   } catch (error) {
-    res.status(500).json({ message: "Failed to count bookings", error });
+    logger.error(`getBookingCountPerPackage error: ${error.message}`);
+    next(error);
   }
 };

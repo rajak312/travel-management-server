@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import {createServer} from "http";
 import cookieParser from "cookie-parser";
+import morgan from 'morgan';
+import logger from './config/logger.js';
 import connectDB from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
 import session from "express-session";
@@ -31,6 +33,11 @@ app.use(
 );
 app.use(cookieParser());
 app.use(express.json());
+app.use(morgan('combined', {
+  stream: {
+    write: message => logger.info(message.trim())
+  }
+}));
 app.use(
   session({
     secret: "google_auth_secret",
@@ -54,9 +61,22 @@ app.get("/", (req, res) => {
   res.send("Travel Booking API with MongoDB is running...");
 });
 
+app.use((err, req, res, next) => {
+  logger.error(
+    `${err.status || 500} - ${err.message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
+  );
+  res.status(err.status || 500).json({
+    error: {
+      message: err.message || 'Internal Server Error',
+      ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    }
+  });
+});
+
+
 initSocket(server);
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  logger.info(`🚀 Server running on http://localhost:${PORT}`);
 });

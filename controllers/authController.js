@@ -4,11 +4,12 @@ import {
   generateAccessToken,
   generateRefreshToken,
 } from "../utils/token.js";
+import logger from "../config/logger.js";
 
 const REFRESH_TOKEN_COOKIE_MAX_AGE =
   Number(process.env.REFRESH_TOKEN_COOKIE_MAX_AGE) || 7 * 24 * 60 * 60 * 1000;
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   const { name, email, password } = req.body;
 
   try {
@@ -26,7 +27,7 @@ export const registerUser = async (req, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: 'None',
-        maxAge:REFRESH_TOKEN_COOKIE_MAX_AGE,
+        maxAge: REFRESH_TOKEN_COOKIE_MAX_AGE,
       })
       .status(201)
       .json({
@@ -38,12 +39,13 @@ export const registerUser = async (req, res) => {
         },
         accessToken,
       });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    logger.error(`registerUser error: ${error.message}`);
+    next(error);
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginUser = async (req, res, next) => {
   const { email, password } = req.body;
 
   try {
@@ -72,12 +74,13 @@ export const loginUser = async (req, res) => {
         },
         accessToken,
       });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    logger.error(`loginUser error: ${error.message}`);
+    next(error);
   }
 };
 
-export const refreshAccessToken = async (req, res) => {
+export const refreshAccessToken = async (req, res, next) => {
   const token = req.cookies.refreshToken;
 
   if (!token)
@@ -90,22 +93,28 @@ export const refreshAccessToken = async (req, res) => {
 
     const newAccessToken = generateAccessToken(user._id);
     res.status(200).json({ accessToken: newAccessToken });
-  } catch (err) {
-    return res.status(403).json({ message: "Invalid refresh token" });
+  } catch (error) {
+    logger.error(`refreshAccessToken error: ${error.message}`);
+    next(error);
   }
 };
 
-export const getMe = async (req, res) => {
-  if (!req.user) {
-    return res.status(401).json({ message: "Unauthorized" });
+export const getMe = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const { _id, name, email, role } = req.user;
+
+    res.status(200).json({
+      id: _id,
+      name,
+      email,
+      role,
+    });
+  } catch (error) {
+    logger.error(`getMe error: ${error.message}`);
+    next(error);
   }
-
-  const { _id, name, email, role } = req.user;
-
-  res.status(200).json({
-    id: _id,
-    name,
-    email,
-    role,
-  });
 };

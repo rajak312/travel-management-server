@@ -10,22 +10,29 @@ export const createDefaultAdmin = async () => {
 
   if (!adminEmail || !adminPassword) {
     console.error(
-      "❌ Missing DEFAULT_ADMIN_EMAIL or DEFAULT_ADMIN_PASSWORD in .env"
+      "❌ Missing ADMIN_EMAIL or ADMIN_PASSWORD in .env"
     );
     return;
   }
 
-  const existingAdmin = await User.findOne({ email: adminEmail });
+  try {
+    const existingAdmin = await User.findOne({ email: adminEmail });
 
-  if (!existingAdmin) {
-    await User.create({
-      name: "Admin",
-      email: adminEmail,
-      password: adminPassword,
-      role: "admin",
-    });
-    console.log(`✅ Default admin created: ${adminEmail} / ${adminPassword}`);
-  } else {
-    console.log("ℹ️ Admin already exists");
+    if (!existingAdmin) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(adminPassword, salt);
+
+      await User.create({
+        name: "Admin",
+        email: adminEmail,
+        password: hashedPassword,
+        role: "admin",
+      });
+      console.log(`✅ Default admin created: ${adminEmail}`);
+    } else {
+      console.log("ℹ️ Admin already exists");
+    }
+  } catch (err) {
+    console.error("❌ Error creating default admin:", err.message);
   }
 };
