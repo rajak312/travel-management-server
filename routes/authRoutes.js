@@ -30,7 +30,7 @@ router.get(
         );
       }
 
-      const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET, {
+      const token = jwt.sign({ id: req.user._id }, process.env.JWT_ACCESS_SECRET, {
         expiresIn: "7d",
       });
 

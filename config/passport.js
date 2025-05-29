@@ -28,7 +28,6 @@ passport.use(
           email,
           profilePic: profile.photos[0].value,
           authType: "google",
-          password: null,
         });
 
         return done(null, newUser);
